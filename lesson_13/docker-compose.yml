@@ -1,0 +1,11 @@
+services:
+  documentstore-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: documentstore-server
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+    environment:
+      - ADDR=:4000
