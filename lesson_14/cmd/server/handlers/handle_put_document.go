@@ -5,16 +5,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
-type putDocumentRequest struct {
+type PutDocumentRequest struct {
 	CollectionName string         `json:"collection_name"`
 	Document       map[string]any `json:"document"`
 }
 
 func (s *Server) HandlePutDocument(c *fiber.Ctx) error {
-	var req putDocumentRequest
+	var req PutDocumentRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(OkResponse{Ok: false, Error: "invalid json"})
 	}
@@ -25,7 +24,7 @@ func (s *Server) HandlePutDocument(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := s.db.Collection(req.CollectionName).InsertOne(ctx, bson.M(req.Document))
+	err := s.repo.PutDocument(ctx, req.CollectionName, req.Document)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
 	}

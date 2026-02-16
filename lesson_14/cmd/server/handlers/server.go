@@ -1,13 +1,11 @@
 package handlers
 
-import "go.mongodb.org/mongo-driver/mongo"
-
 type Server struct {
-	db *mongo.Database
+	repo Repository
 }
 
-func NewServer(db *mongo.Database) *Server {
-	return &Server{db: db}
+func NewServer(repo Repository) *Server {
+	return &Server{repo: repo}
 }
 
 type OkResponse struct {

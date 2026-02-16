@@ -7,13 +7,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type deleteIndexRequest struct {
+type DeleteIndexRequest struct {
 	CollectionName string `json:"collection_name"`
 	Name           string `json:"name"`
 }
 
 func (s *Server) HandleDeleteIndex(c *fiber.Ctx) error {
-	var req deleteIndexRequest
+	var req DeleteIndexRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(OkResponse{Ok: false, Error: "invalid json"})
 	}
@@ -24,7 +24,7 @@ func (s *Server) HandleDeleteIndex(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := s.db.Collection(req.CollectionName).Indexes().DropOne(ctx, req.Name)
+	err := s.repo.DeleteIndex(ctx, req.CollectionName, req.Name)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
 	}

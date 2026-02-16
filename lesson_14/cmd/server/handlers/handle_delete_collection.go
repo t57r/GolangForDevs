@@ -7,12 +7,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type deleteCollectionRequest struct {
+type DeleteCollectionRequest struct {
 	CollectionName string `json:"collection_name"`
 }
 
 func (s *Server) HandleDeleteCollection(c *fiber.Ctx) error {
-	var req deleteCollectionRequest
+	var req DeleteCollectionRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(OkResponse{Ok: false, Error: "invalid json"})
 	}
@@ -24,7 +24,7 @@ func (s *Server) HandleDeleteCollection(c *fiber.Ctx) error {
 	defer cancel()
 
 	// Dropping collection
-	if err := s.db.Collection(req.CollectionName).Drop(ctx); err != nil {
+	if err := s.repo.DeleteCollection(ctx, req.CollectionName); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
 	}
 	return c.JSON(OkResponse{Ok: true})

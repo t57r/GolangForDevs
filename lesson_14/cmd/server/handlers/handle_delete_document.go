@@ -5,16 +5,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
-type deleteDocumentRequest struct {
+type DeleteDocumentRequest struct {
 	CollectionName string         `json:"collection_name"`
 	Filter         map[string]any `json:"filter"`
 }
 
 func (s *Server) HandleDeleteDocument(c *fiber.Ctx) error {
-	var req deleteDocumentRequest
+	var req DeleteDocumentRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(OkResponse{Ok: false, Error: "invalid json"})
 	}
@@ -25,9 +24,9 @@ func (s *Server) HandleDeleteDocument(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	res, err := s.db.Collection(req.CollectionName).DeleteOne(ctx, bson.M(req.Filter))
+	deletedCount, err := s.repo.DeleteDocument(ctx, req.CollectionName, req.Filter)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
 	}
-	return c.JSON(fiber.Map{"ok": true, "deleted": res.DeletedCount})
+	return c.JSON(fiber.Map{"ok": true, "deleted": deletedCount})
 }

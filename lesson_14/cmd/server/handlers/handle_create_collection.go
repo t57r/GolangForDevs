@@ -7,12 +7,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type createCollectionRequest struct {
+type CreateCollectionRequest struct {
 	CollectionName string `json:"collection_name"`
 }
 
 func (s *Server) HandleCreateCollection(c *fiber.Ctx) error {
-	var req createCollectionRequest
+	var req CreateCollectionRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(OkResponse{Ok: false, Error: "invalid json"})
 	}
@@ -23,8 +23,7 @@ func (s *Server) HandleCreateCollection(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// CreateCollection errors if it already exists
-	if err := s.db.CreateCollection(ctx, req.CollectionName); err != nil {
+	if err := s.repo.CreateCollection(ctx, req.CollectionName); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
 	}
 	return c.JSON(OkResponse{Ok: true})

@@ -5,11 +5,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type listDocumentsRequest struct {
+type ListDocumentsRequest struct {
 	CollectionName string         `json:"collection_name"`
 	Filter         map[string]any `json:"filter,omitempty"`
 	Limit          int64          `json:"limit,omitempty"`
@@ -17,7 +15,7 @@ type listDocumentsRequest struct {
 }
 
 func (s *Server) HandleListDocuments(c *fiber.Ctx) error {
-	var req listDocumentsRequest
+	var req ListDocumentsRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(OkResponse{Ok: false, Error: "invalid json"})
 	}
@@ -34,17 +32,9 @@ func (s *Server) HandleListDocuments(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	opts := options.Find().SetLimit(req.Limit).SetSkip(req.Skip)
-	cur, err := s.db.Collection(req.CollectionName).Find(ctx, bson.M(req.Filter), opts)
+	docs, err := s.repo.ListDocuments(ctx, req.CollectionName, req.Filter, req.Limit, req.Skip)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
 	}
-	defer cur.Close(ctx)
-
-	var docs []bson.M
-	if err := cur.All(ctx, &docs); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(OkResponse{Ok: false, Error: err.Error()})
-	}
-
 	return c.JSON(fiber.Map{"ok": true, "documents": docs})
 }

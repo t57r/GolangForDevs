@@ -31,7 +31,8 @@ func main() {
 	}
 
 	db := client.Database(dbName)
-	server := handlers.NewServer(db)
+	mongoRepo := handlers.NewMongoRepository(db)
+	server := handlers.NewServer(mongoRepo)
 
 	app := fiber.New()
 
